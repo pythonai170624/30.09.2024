@@ -111,3 +111,19 @@ language plpgsql AS
     $$;
 
 select * from sp_most_expensive_movie_name();
+
+drop function sp_movies_expensive_name;
+CREATE or replace function sp_movies_expensive_name(out most_expensive_movie_name text)
+language plpgsql AS
+    $$
+        DECLARE
+            max_price double precision := 0;
+        BEGIN
+            -- select into max_price the most expensive movie
+            -- select into most_expensive_movie_name the title of the movie
+            --      with this price
+        end;
+    $$;
+
+select * from sp_movies_expensive_name();
+-- 2. create sp_num_of_movies return the number of movies + number of countries
