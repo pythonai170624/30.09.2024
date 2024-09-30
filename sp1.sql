@@ -112,7 +112,7 @@ language plpgsql AS
 
 select * from sp_most_expensive_movie_name();
 
----------- TARGIL 1
+---------- TARGIl 1
 drop function sp_movies_expensive_name;
 CREATE or replace function sp_movies_expensive_name(out most_expensive_movie_name text)
 language plpgsql AS
