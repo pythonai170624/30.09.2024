@@ -112,6 +112,7 @@ language plpgsql AS
 
 select * from sp_most_expensive_movie_name();
 
+---------- TARGIL 1
 drop function sp_movies_expensive_name;
 CREATE or replace function sp_movies_expensive_name(out most_expensive_movie_name text)
 language plpgsql AS
@@ -126,4 +127,20 @@ language plpgsql AS
     $$;
 
 select * from sp_movies_expensive_name();
--- 2. create sp_num_of_movies return the number of movies + number of countries
+
+--------- TARGIl 2
+-- create sp_num_of_movies return the number of movies + number of countries
+drop function sp_count_movies_and_countries;
+CREATE or replace function sp_count_movies_and_countries(out count_movies_and_countries bigint)
+language plpgsql AS
+    $$
+        DECLARE
+            count_movies bigint := 0;
+            count_countries bigint := 0;
+        BEGIN
+            -- select into count_movies
+            -- select into count_countries
+            -- return sum of both
+        END;
+    $$
+select * from sp_count_movies_and_countries();
