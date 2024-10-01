@@ -1,0 +1,326 @@
+1. hello_world
+------- Code demo ------- 
+CREATE OR REPLACE FUNCTION hello_world()
+RETURNS varchar
+LANGUAGE plpgsql AS
+$$
+BEGIN
+    RETURN CONCAT('hello', 'world', ' ! ', current_timestamp);
+END;
+$$;
+Write a query that returns the string 'hello world' along with the current date and time.
+
+2. sp_sum
+------- Code demo ------- 
+CREATE OR REPLACE FUNCTION sp_sum(m DOUBLE PRECISION, n DOUBLE PRECISION)
+RETURNS DOUBLE PRECISION
+LANGUAGE plpgsql AS
+$$
+DECLARE
+    x INTEGER := 0;
+BEGIN
+    RETURN m + n + x;
+END;
+$$;
+Write a query that takes two numbers of type double precision, adds them, and returns the sum.
+
+3. sp_product
+------- Code demo ------- 
+CREATE OR REPLACE FUNCTION sp_product(x DOUBLE PRECISION, y DOUBLE PRECISION,
+    OUT prod DOUBLE PRECISION,
+    OUT div_res DOUBLE PRECISION)
+LANGUAGE plpgsql AS
+$$
+DECLARE
+    z DOUBLE PRECISION := 1.0;
+BEGIN
+    prod = x * y * z;
+    div_res = x / y;
+END;
+$$;
+Write a query that multiplies two numbers and also divides the first number by the second. The function should return both results.
+
+4. sp_movies_stat
+------- Code demo ------- 
+CREATE OR REPLACE FUNCTION sp_movies_stat(
+    OUT min_price DOUBLE PRECISION,
+    OUT max_price DOUBLE PRECISION,
+    OUT avg_price DOUBLE PRECISION)
+LANGUAGE plpgsql AS
+$$
+BEGIN
+    SELECT MIN(price), MAX(price), AVG(price)::NUMERIC(5, 2)
+    INTO min_price, max_price, avg_price
+    FROM movies;
+END;
+$$;
+Write a query that returns the minimum, maximum, and average price of all the movies in the movies table.
+
+5. sp_most_expensive_movie_name
+------- Code demo ------- 
+CREATE OR REPLACE FUNCTION sp_most_expensive_movie_name(OUT movie_name TEXT, OUT movie_price DOUBLE PRECISION)
+LANGUAGE plpgsql AS
+$$
+BEGIN
+    SELECT title, price
+    INTO movie_name, movie_price
+    FROM movies
+    WHERE price = (SELECT MAX(price) FROM movies);
+END;
+$$;
+Write a query that returns the title and price of the most expensive movie from the movies table.
+
+6. sp_movies_expensive_name
+------- Code demo ------- 
+CREATE OR REPLACE FUNCTION sp_movies_expensive_name(OUT most_expensive_movie_name TEXT)
+LANGUAGE plpgsql AS
+$$
+DECLARE
+    max_price DOUBLE PRECISION := 0;
+BEGIN
+    -- Select the most expensive movie price
+    SELECT MAX(price)
+    INTO max_price
+    FROM movies;
+
+    -- Select the movie with this price
+    SELECT title
+    INTO most_expensive_movie_name
+    FROM movies
+    WHERE price = max_price;
+END;
+$$;
+Write a query that returns the name of the most expensive movie.
+
+7. sp_count_movies_and_countries
+------- Code demo ------- 
+CREATE OR REPLACE FUNCTION sp_count_movies_and_countries(OUT count_movies_and_countries BIGINT)
+LANGUAGE plpgsql AS
+$$
+DECLARE
+    count_movies BIGINT := 0;
+    count_countries BIGINT := 0;
+BEGIN
+    -- Count the number of movies
+    SELECT COUNT(*) INTO count_movies FROM movies;
+
+    -- Count the number of countries
+    SELECT COUNT(*) INTO count_countries FROM countries;
+
+    -- Return the sum of both
+    count_movies_and_countries := count_movies + count_countries;
+END;
+$$;
+Write a query that returns the total number of movies and countries combined from the movies and countries tables.
+
+8. sp_insert_movie
+------- Code demo ------- 
+CREATE OR REPLACE FUNCTION sp_insert_movie(_title TEXT, _release_date TIMESTAMP, _price DOUBLE PRECISION, _country_id BIGINT)
+RETURNS BIGINT
+LANGUAGE plpgsql AS
+$$
+DECLARE
+    new_id BIGINT := 0;
+BEGIN
+    INSERT INTO movies (title, release_date, price, country_id)
+    VALUES (_title, _release_date, _price, _country_id)
+    RETURNING id INTO new_id;
+
+    RETURN new_id;  -- Return the ID of the newly created record
+END;
+$$;
+Write a query that inserts a new movie into the movies table, including the title, release date, price, and country ID, and returns the ID of the newly created movie.
+
+9. sp_update_movie
+------- Code demo ------- 
+CREATE OR REPLACE PROCEDURE sp_update_movie(_title TEXT, _release_date TIMESTAMP, _price DOUBLE PRECISION, _country_id BIGINT, _update_id BIGINT)
+LANGUAGE plpgsql AS
+$$
+BEGIN
+    UPDATE movies
+    SET title = _title, release_date = _release_date, price = _price, country_id = _country_id
+    WHERE id = _update_id;
+END;
+$$;
+Write a query that updates an existing movie's details such as title, release date, price, and country ID, given the movie's ID.
+
+10. sp_get_movies_in_range
+------- Code demo ------- 
+CREATE OR REPLACE FUNCTION sp_get_movies_in_range(_min DOUBLE PRECISION, _max DOUBLE PRECISION)
+RETURNS TABLE(id BIGINT, title TEXT, release_date TIMESTAMP, price DOUBLE PRECISION, country_id BIGINT, country_name TEXT)
+LANGUAGE plpgsql AS
+$$
+BEGIN
+    RETURN QUERY
+    SELECT m.id, m.title, m.release_date, m.price, m.country_id, c.name
+    FROM movies m
+    JOIN countries c ON m.country_id = c.id
+    WHERE m.price BETWEEN _min AND _max;
+END;
+$$;
+Write a query that returns all movies whose prices fall within a specified range, including details such as the movie title, release date, price, country ID, and country name.
+
+11. sp_get_movies_mid
+------- Code demo ------- 
+CREATE OR REPLACE FUNCTION sp_get_movies_mid()
+RETURNS TABLE(id BIGINT, title TEXT, release_date TIMESTAMP, price DOUBLE PRECISION, country_id BIGINT, country_name TEXT)
+LANGUAGE plpgsql AS
+$$
+BEGIN
+    RETURN QUERY
+    WITH cheapest_movie AS (
+        SELECT * FROM movies WHERE price = (SELECT MIN(price) FROM movies)
+    ), expensive_movie AS (
+        SELECT * FROM movies WHERE price = (SELECT MAX(price) FROM movies)
+    )
+    SELECT m.id, m.title, m.release_date, m.price, m.country_id, c.name
+    FROM movies m
+    JOIN countries c ON m.country_id = c.id
+    WHERE m.id NOT IN (SELECT cheapest_movie.id FROM cheapest_movie)
+    AND m.id NOT IN (SELECT expensive_movie.id FROM expensive_movie);
+END;
+$$;
+Write a query that returns all movies that are neither the cheapest nor the most expensive.
+
+12. sp_get_max
+------- Code demo ------- 
+CREATE OR REPLACE FUNCTION sp_get_max(_x INTEGER, _y INTEGER)
+RETURNS INTEGER
+LANGUAGE plpgsql AS
+$$
+BEGIN
+    IF _x > _y THEN
+        RETURN _x;
+    ELSE
+        RETURN _y;
+    END IF;
+END;
+$$;
+Write a query that returns the larger of two integers.
+
+13. sp_get_max3
+------- Code demo ------- 
+CREATE OR REPLACE FUNCTION sp_get_max3(_x INTEGER, _y INTEGER, _z INTEGER)
+RETURNS INTEGER
+LANGUAGE plpgsql AS
+$$
+BEGIN
+    IF _x > _y AND _x > _z THEN
+        RETURN _x;
+    ELSIF _y > _z THEN
+        RETURN _y;
+    ELSE
+        RETURN _z;
+    END IF;
+END;
+$$;
+Write a query that returns the largest of three integers.
+
+14. sp_get_movies_country_id
+------- Code demo ------- 
+CREATE OR REPLACE FUNCTION sp_get_movies_country_id(_id_type TEXT)
+RETURNS TABLE(id BIGINT, title TEXT)
+LANGUAGE plpgsql AS
+$$
+BEGIN
+    RETURN QUERY
+    SELECT CASE 
+              WHEN _id_type = 'M' THEN m.id
+              ELSE m.country_id
+           END AS id, m.title
+    FROM movies m;
+END;
+$$;
+Write a query that, depending on the provided type (M for movie or other type for country), returns either the movie ID or the country ID along with the movie title.
+
+15. sp_get_movies_price_or_pow2
+------- Code demo ------- 
+CREATE OR REPLACE FUNCTION sp_get_movies_price_or_pow2(_pow BOOLEAN)
+RETURNS TABLE(id BIGINT, title TEXT, price DOUBLE PRECISION)
+LANGUAGE plpgsql AS
+$$
+BEGIN
+    RETURN QUERY
+    SELECT m.id, m.title, 
+           CASE 
+               WHEN _pow THEN POW(m.price, 2)
+               ELSE m.price
+           END AS price
+    FROM movies m;
+END;
+$$;
+Write a query that returns the movie price squared if _pow is true, otherwise return the regular price, along with the movie ID and title.
+
+16. sp_get_random
+------- Code demo ------- 
+CREATE OR REPLACE FUNCTION sp_get_random(_max INTEGER)
+RETURNS INTEGER
+LANGUAGE plpgsql AS
+$$
+BEGIN
+    RETURN (RANDOM() * (_max - 1)) + 1;
+END;
+$$;
+Write a query that returns a random integer between 1 and the specified maximum value.
+
+17. sp_get_sum_loop
+------- Code demo ------- 
+CREATE OR REPLACE FUNCTION sp_get_sum_loop()
+RETURNS DOUBLE PRECISION
+LANGUAGE plpgsql AS
+$$
+DECLARE
+    sum DOUBLE PRECISION := 0.0;
+BEGIN
+    FOR i IN 1..(SELECT MAX(movies.id) FROM movies) LOOP
+        IF (SELECT COUNT(*) FROM movies m WHERE m.id = i) > 0 THEN
+            sum := sum + (SELECT m.price FROM movies m WHERE m.id = i);
+        END IF;
+    END LOOP;
+    RETURN sum;
+END;
+$$;
+Write a query that calculates and returns the sum of prices for all movies by looping through each movie's ID.
+
+18. sp_div
+------- Code demo ------- 
+CREATE OR REPLACE FUNCTION sp_div(x INTEGER, y INTEGER)
+RETURNS DOUBLE PRECISION
+LANGUAGE plpgsql AS
+$$
+BEGIN
+    IF y = 0 THEN
+        RAISE division_by_zero;
+    END IF;
+    RETURN x::DOUBLE PRECISION / y::DOUBLE PRECISION;
+END;
+$$;
+Write a query that divides two integers and returns the result as a double precision. If the second number is zero, raise a division by zero exception.
+
+19. sp_upsert_movie
+------- Code demo ------- 
+CREATE OR REPLACE FUNCTION sp_upsert_movie(_title TEXT, _release_date TIMESTAMP, _price DOUBLE PRECISION, _country_id BIGINT)
+RETURNS BIGINT
+LANGUAGE plpgsql AS
+$$
+DECLARE
+    record_id BIGINT := 0;
+BEGIN
+    SELECT movies.id INTO record_id 
+    FROM movies 
+    WHERE movies.title = _title;
+
+    IF NOT FOUND THEN
+        INSERT INTO movies (title, release_date, price, country_id)
+        VALUES (_title, _release_date, _price, _country_id)
+        RETURNING id INTO record_id;
+    ELSE
+        UPDATE movies
+        SET release_date = _release_date, price = _price, country_id = _country_id
+        WHERE movies.id = record_id;
+    END IF;
+
+    RETURN record_id;  -- Return the ID of the newly created or updated record
+END;
+$$;
+Write a query that either inserts a new movie with the given title, release date, price, and country ID, or updates the existing record if the movie already exists, and returns the movie's ID.
