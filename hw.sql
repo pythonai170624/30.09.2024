@@ -6,7 +6,7 @@ CREATE TABLE authors (
 CREATE TABLE books (
     id bigserial NOT NULL PRIMARY KEY,
     title TEXT,
-    release_date TIMESTAMP NOT NULL,
+    release_date DATE NOT NULL,
     price DOUBLE PRECISION DEFAULT 0 NOT NULL,
     author_id BIGINT REFERENCES authors
 );
@@ -50,3 +50,4 @@ INSERT INTO books (title, release_date, price, author_id) VALUES
 ('Oryx and Crake', '2003-05-01', 34.00, 9),
 ('Adventures of Huckleberry Finn', '1884-12-10', 22.00, 10),
 ('The Adventures of Tom Sawyer', '1876-06-25', 20.50, 10);
+
