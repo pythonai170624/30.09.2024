@@ -14,7 +14,7 @@ CREATE TABLE books (
 );
 
 -- Insert Authors (at least 10 authors)
-INSERT INTO authors (name) VALUES 
+INSERT INTO authors (name) VALUES
 ('J.K. Rowling'),    -- 1
 ('George R.R. Martin'),  -- 2
 ('J.R.R. Tolkien'),  -- 3
@@ -29,7 +29,7 @@ INSERT INTO authors (name) VALUES
 -- Insert Books (at least 20 books)
 INSERT INTO books (title, release_date, price, author_id) VALUES
 -- J.K. Rowling books
-('Harry Potter and the Philosopher\'s Stone', '1997-06-26', 39.99, 1),
+('Harry Potter and the Philosophers Stone', '1997-06-26', 39.99, 1),
 ('Harry Potter and the Chamber of Secrets', '1998-07-02', 34.99, 1),
 ('Harry Potter and the Prisoner of Azkaban', '1999-07-08', 40.99, 1),
 -- George R.R. Martin books
@@ -59,10 +59,9 @@ INSERT INTO books (title, release_date, price, author_id) VALUES
 ('Foundation', '1951-06-01', 31.50, 8),
 ('I, Robot', '1950-12-02', 27.99, 8),
 -- Margaret Atwood books
-('The Handmaid\'s Tale', '1985-08-17', 28.99, 9),
+('The Handmaids Tale', '1985-08-17', 28.99, 9),
 ('Oryx and Crake', '2003-05-01', 34.00, 9),
 -- Mark Twain books
 ('Adventures of Huckleberry Finn', '1884-12-10', 22.00, 10),
 ('The Adventures of Tom Sawyer', '1876-06-25', 20.50, 10);
-
 
