@@ -1,3 +1,34 @@
+-------------- Table creation
+create table countries
+(
+    id   bigserial not null constraint countries_pk primary key,
+    name text      not null
+);
+create table movies
+(
+    id           bigserial                  not null
+        constraint movies_pk
+            primary key,
+    title        text,
+    release_date timestamp                  not null,
+    price        double precision default 0 not null,
+    country_id   bigint
+        constraint movies_countries_id_fk
+            references countries
+);
+insert into countries(name) values ('Israel'); -- 1
+insert into countries(name) values ('USA'); -- 2
+insert into countries(name) values ('JAPAN'); -- 3
+insert into countries(name) values ('CANADA'); -- 4
+insert into movies (title, release_date, price, country_id)
+values ('batman returns', '2020-12-16 20:21:00', 45.5, 3);
+insert into movies (title, release_date, price, country_id)
+values ('wonder woman', '2018-07-11 08:12:11', 125.5, 3);
+insert into movies (title, release_date, price, country_id)
+values ('matrix resurrection', '2021-01-03 09:10:11', 38.7, 4);
+
+---------------------- SP demo
+
 1. hello_world
 ------- Code demo ------- 
 CREATE OR REPLACE FUNCTION hello_world()
@@ -129,6 +160,10 @@ BEGIN
     RETURN new_id;  -- Return the ID of the newly created record
 END;
 $$;
+select * from sp_insert_movie('Queen gambit', cast('2020-08-12' as timestamp)
+    , 87.1, 3);
+select * from sp_insert_movie('Eternals', cast('2020-05-21' as timestamp)
+    , 101.3, 1);
 Write a query that inserts a new movie into the movies table, including the title, release date, price, and country ID, and returns the ID of the newly created movie.
 
 9. sp_update_movie
@@ -142,6 +177,8 @@ BEGIN
     WHERE id = _update_id;
 END;
 $$;
+call sp_update_movie('Queen gambit 2', cast('2020-08-12' as timestamp)
+    , 87.1, 3, 5);
 Write a query that updates an existing movie's details such as title, release date, price, and country ID, given the movie's ID.
 
 10. sp_get_movies_in_range
@@ -158,6 +195,7 @@ BEGIN
     WHERE m.price BETWEEN _min AND _max;
 END;
 $$;
+select * from sp_get_movies_in_range(100, 150) order by release_date;
 Write a query that returns all movies whose prices fall within a specified range, including details such as the movie title, release date, price, country ID, and country name.
 
 11. sp_get_movies_mid
@@ -180,6 +218,7 @@ BEGIN
     AND m.id NOT IN (SELECT expensive_movie.id FROM expensive_movie);
 END;
 $$;
+select * from sp_get_movies_mid() order by release_date;
 Write a query that returns all movies that are neither the cheapest nor the most expensive.
 
 12. sp_get_max
